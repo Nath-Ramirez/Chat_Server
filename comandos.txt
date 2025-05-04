@@ -1,0 +1,36 @@
+comando para crear cada imagen de cada codigo, el de client.c y el de server.c
+
+en la carpeta client_folder ejecuta:
+docker build -t chat_client -f Dockerfile .
+
+en la carpeta server_folder ejecuta:
+docker build -t chat_server -f Dockerfile .
+
+crea una red docker que es donde se conectaran los clientes y el server ejecuta el siguiente comando:
+docker network create --subnet=192.168.1.0/24 chat_network
+
+luego con las imagenes ya creadas se pueden crear contenedores de las imagenes, que son somo instancias de las imagenes docker,
+cada uno de esos ultimos comandos se puede hacer en cualquier carpeta pero se deben hacer en consolas de visual distintas.
+
+este comando crea un contenedor con su propia ip terminada en 100, se conecta a la red  docker llamada chat_network y se llama server.
+
+este comando es para crear o "correr" los clientes que deben tener nombre e ip distinta, asi:
+
+docker run -it --rm --name client1 --network chat_network --ip 192.168.1.101 chat_client
+
+docker run -it --rm --name client2 --network chat_network --ip 192.168.1.102 chat_client
+
+Para poder crear el archivo logs.txt debemos crear un volumen para mantener consistencia de los datos y poder usar este archivo fuera de la 
+ejecución del Docker porque poresta razón no se creaba el logs.txt, para crear el volumen:
+Vamos a Telematica y ejecutamos:
+docker volume create chat-logs
+
+Y para crear el contenedor del servidor en el entorno del volumen:
+docker run -it --name server \
+  --network chat_network \
+  -v chat-logs:/app \
+  chat_server
+Puede ser que el archivo logs.txt se cree en la ruta: \\wsl.localhost\docker-desktop\tmp\docker-desktop-root\var\lib\docker\volumes\chat-logs\_data
+
+Ahora, para crear el contenedor del servidor debemos usar:
+docker run -it -p 8080   -v $(pwd):/app   --name servidor-container chat_server
